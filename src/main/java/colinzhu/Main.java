@@ -1,4 +1,4 @@
-package org.example;
+package colinzhu;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -51,8 +51,6 @@ public class Main {
         jmeter.configure(testPlanTree);
         jmeter.run();
 
-        System.out.println("Test completed. See " + "example.jtl file for results");
-        System.out.println("JMeter .jmx script is available at " + "example.jmx");
-        System.exit(0);
+        System.out.println("Test completed. See " + "test.jtl file for results");
     }
 }

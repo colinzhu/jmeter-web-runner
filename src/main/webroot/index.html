@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Jmeter web runner</title>
+</head>
+<body>
+<form onsubmit="sendMessage(event)">
+    <input type="text" id="messageInput">
+    <button type="submit">Run</button>
+</form>
+<div id="messages"></div>
+<script>
+      const socket = new WebSocket("ws://localhost:8080");
+      socket.onmessage = event => {
+        const message = document.createElement("div");
+        message.textContent = event.data;
+        document.getElementById("messages").appendChild(message);
+      };
+      function sendMessage(event) {
+        event.preventDefault();
+        const input = document.getElementById("messageInput");
+        socket.send(input.value);
+        input.value = "";
+      }
+    </script>
+</body>
+</html>
