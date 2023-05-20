@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <title>Jmeter web runner</title>
-</head>
-<body>
-<form onsubmit="sendMessage(event)">
-    <input type="text" id="messageInput">
-    <button type="submit">Run</button>
-</form>
-<div id="messages"></div>
-<script>
+
+    <style>
+        body {
+            font-family:  monospace;
+        }
+    </style>
+    <script>
       const socket = new WebSocket("ws://localhost:8080");
       socket.onmessage = event => {
         const message = document.createElement("div");
@@ -22,7 +21,25 @@
         const input = document.getElementById("messageInput");
         socket.send(input.value);
         input.value = "";
+      };
+      function start(event) {
+        event.preventDefault();
+        const input = document.getElementById("messageInput");
+        socket.send("startParams=" + input.value);
+        input.value = "";
+      };
+      function clearMessages() {
+        document.getElementById("messages").innerHTML = "";
       }
     </script>
+</head>
+<body>
+<form onsubmit="sendMessage(event)">
+    <input type="text" id="messageInput">
+    <button type="submit">Submit</button>
+    <button onclick="javascript:start(event);return false;">Start</button>
+    <button onclick="javascript:clearMessages();return false;">Clear</button>
+</form>
+<div id="messages"></div>
 </body>
 </html>

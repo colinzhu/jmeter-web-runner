@@ -1,4 +1,4 @@
-package colinzhu;
+package colinzhu.jmeterwebrunner;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -11,9 +11,11 @@ import org.apache.jorphan.collections.HashTree;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 
-public class Main {
-    public static void main(String[] args) throws Exception {
+public class MainTask {
+
+    public static void main(String[] args) {
         Logger root = (Logger)LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
         root.setLevel(Level.INFO);
 
@@ -26,11 +28,20 @@ public class Main {
         JMeterUtils.initLocale();
 
         // Initialize JMeter SaveService
-        SaveService.loadProperties();
+        try {
+            SaveService.loadProperties();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         // Load existing .jmx Test Plan
         File f = new File("test.jmx");
-        HashTree testPlanTree = SaveService.loadTree(f);
+        HashTree testPlanTree;
+        try {
+            testPlanTree = SaveService.loadTree(f);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         //add Summarizer output to get test progress in stdout like:
         // summary =      2 in   1.3s =    1.5/s Avg:   631 Min:   290 Max:   973 Err:     0 (0.00%)
