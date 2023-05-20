@@ -2,6 +2,8 @@ package colinzhu.webconsole;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
+import io.vertx.core.Vertx;
+import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.ServerWebSocket;
 import io.vertx.ext.web.Router;
@@ -12,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 @Slf4j
@@ -19,6 +22,16 @@ import java.util.function.Consumer;
 public class WebConsole extends AbstractVerticle {
     private final Consumer<String[]> task;
     private boolean isTaskRunning = false;
+
+    private static WebConsole instance;
+
+    public static synchronized void start(Consumer<String[]> task) {
+        if (instance == null) { // only deploy once
+            VertxOptions vertxOptions = new VertxOptions().setMaxWorkerExecuteTime(TimeUnit.MINUTES.toNanos(10L));
+            instance = new WebConsole(task);
+            Vertx.vertx(vertxOptions).deployVerticle(instance);
+        }
+    }
 
     @Override
     public void start() {
