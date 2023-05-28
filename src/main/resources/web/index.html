@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>JMeter web runner</title>
+
+    <style>
+        body {
+            font-family:  monospace;
+        }
+    </style>
+    <script>
+      const protocol = location.protocol == "https:" ? "wss:" : "ws:";
+      const socket = new WebSocket(protocol + "//" + location.host);
+      socket.onmessage = event => {
+        const message = document.createElement("div");
+        message.textContent = event.data;
+        document.getElementById("messages").appendChild(message);
+      };
+      function sendMessage(event) {
+        event.preventDefault();
+        const input = document.getElementById("messageInput");
+        socket.send("startParams=" + input.value);
+        input.value = "";
+      };
+      function clearMessages() {
+        document.getElementById("messages").innerHTML = "";
+      }
+    </script>
+</head>
+<body>
+<form onsubmit="sendMessage(event)">
+    <input type="text" id="messageInput">
+    <button type="submit">Start</button>
+    <button onclick="javascript:clearMessages();return false;">Clear</button>
+</form>
+<div id="messages"></div>
+</body>
+</html>
