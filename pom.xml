@@ -16,11 +16,21 @@
 
     <dependencies>
         <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-config</artifactId>
+            <version>4.4.2</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.jmeter</groupId>
             <artifactId>ApacheJMeter_java</artifactId>
             <version>5.5</version>
         </dependency>
-<!--        <dependency>-->
+        <dependency>
+            <groupId>org.apache.jmeter</groupId>
+            <artifactId>ApacheJMeter_functions</artifactId>
+            <version>5.5</version>
+        </dependency>
+        <!--        <dependency>-->
 <!--            <groupId>org.apache.jmeter</groupId>-->
 <!--            <artifactId>ApacheJMeter_core</artifactId>-->
 <!--            <version>5.5</version>-->
@@ -75,7 +85,7 @@
                             </filters>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>colinzhu.jmeterwebrunner.App</mainClass>
+                                    <mainClass>colinzhu.jmeterwebrunner.JMeterRunner</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>
