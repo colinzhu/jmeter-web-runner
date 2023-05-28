@@ -2,6 +2,9 @@ package colinzhu.jmeterwebrunner;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
+import io.github.colinzhu.webconsole.WebConsole;
+import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.net.PemKeyCertOptions;
 import org.apache.jmeter.engine.StandardJMeterEngine;
 import org.apache.jmeter.reporters.ResultCollector;
 import org.apache.jmeter.reporters.Summariser;
@@ -16,6 +19,17 @@ import java.io.IOException;
 public class JMeterRunner {
 
     public static void main(String[] args) {
+//                HttpServerOptions options = new HttpServerOptions()
+//                .setPort(8080)
+//                .setSsl(true)
+//                .setHost("example.com")
+//                .setKeyCertOptions(new PemKeyCertOptions().setCertPath("chain.pem").setKeyPath("key.pem"));
+//        WebConsole.start(JMeterRunner::main, options);
+
+        WebConsole.start(JMeterRunner::run, 8080);
+    }
+
+    public static void run(String[] args) {
         Logger root = (Logger)LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
         root.setLevel(Level.INFO);
 
