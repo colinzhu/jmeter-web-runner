@@ -4,9 +4,9 @@ JMeter Web Runner is a super simple java tool that allows you to trigger jmeter 
 
 ## How to use
 
-1. Clone this repository.
+1. Clone this repository
 2. Install jmeter on the server
-3. Update JMeterRunner accordingly
-4. Run the `App` class to start the server.
-5. Open a web browser and navigate to `http://localhost:8082`. You should see a web console with a welcome message and a prompt to enter the parameters for the task.
-6. Enter the parameters for the task separated by spaces and click "Start". The task will start running and you will see the output in the web console.
+3. Update config.properties
+4. Run the `App` class to start the server
+5. Open a web browser and navigate to `http://localhost:8080`. You should see a web console with a welcome message and a prompt to enter the parameters for the task
+6. Enter the JMX test file name e.g. test.jmx and click "Start"
