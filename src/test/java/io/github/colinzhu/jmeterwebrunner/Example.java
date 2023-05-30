@@ -1,16 +1,14 @@
 package io.github.colinzhu.jmeterwebrunner;
 
-import io.github.colinzhu.webconsole.WebConsole;
-
-public class App {
+public class Example {
     public static void main(String[] args) {
-//                HttpServerOptions options = new HttpServerOptions()
+//        HttpServerOptions options = new HttpServerOptions()
 //                .setPort(8080)
 //                .setSsl(true)
 //                .setHost("example.com")
 //                .setKeyCertOptions(new PemKeyCertOptions().setCertPath("chain.pem").setKeyPath("key.pem"));
-//        WebConsole.start(null, JMeterRunner::main, options);
+//        JMeterRunner.start(options);
 
-        WebConsole.start(()-> System.out.println("hello"), JMeterRunner::main, 8080);
+        JMeterRunner.start(8080);
     }
 }

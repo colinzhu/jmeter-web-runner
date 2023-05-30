@@ -1,5 +1,7 @@
 package io.github.colinzhu.jmeterwebrunner;
 
+import io.github.colinzhu.webconsole.WebConsole;
+import io.vertx.core.http.HttpServerOptions;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.jmeter.JMeter;
@@ -18,7 +20,23 @@ import java.util.Properties;
 @Slf4j
 public class JMeterRunner {
 
-    public static void main(String[] args) {
+    public static void start(int port) {
+        WebConsole.start(JMeterRunner::main, port);
+    }
+
+    public static void start(Runnable preTask, int port) {
+        WebConsole.start(preTask, JMeterRunner::main, port);
+    }
+
+    public static void start(HttpServerOptions options ) {
+        WebConsole.start(null, JMeterRunner::main, options);
+    }
+
+    public static void start(Runnable preTask, HttpServerOptions options ) {
+        WebConsole.start(preTask, JMeterRunner::main, options);
+    }
+
+    private static void main(String[] args) {
         init();
 
         String jmxFile = args != null && args.length > 0 && args[0].trim().length() > 0 ? args[0] : null;
