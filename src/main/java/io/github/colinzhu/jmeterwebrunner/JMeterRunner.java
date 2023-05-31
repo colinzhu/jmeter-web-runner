@@ -2,6 +2,7 @@ package io.github.colinzhu.jmeterwebrunner;
 
 import io.github.colinzhu.webconsole.WebConsole;
 import io.vertx.core.http.HttpServerOptions;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.jmeter.JMeter;
@@ -11,32 +12,30 @@ import org.apache.jmeter.util.JMeterUtils;
 import org.apache.jorphan.collections.HashTree;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Properties;
 
 @Slf4j
+@RequiredArgsConstructor
 public class JMeterRunner {
 
-    public static void start(int port) {
-        WebConsole.start(JMeterRunner::main, port);
+    private final String jmeterHome;
+
+    public void start(int port) {
+        WebConsole.start(this::triggerJMeter, port);
     }
 
-    public static void start(Runnable preTask, int port) {
-        WebConsole.start(preTask, JMeterRunner::main, port);
+    public void start(Runnable preTask, int port) {
+        WebConsole.start(preTask, this::triggerJMeter, port);
     }
 
-    public static void start(HttpServerOptions options ) {
-        WebConsole.start(null, JMeterRunner::main, options);
+    public void start(HttpServerOptions options ) {
+        WebConsole.start(null, this::triggerJMeter, options);
     }
 
-    public static void start(Runnable preTask, HttpServerOptions options ) {
-        WebConsole.start(preTask, JMeterRunner::main, options);
+    public void start(Runnable preTask, HttpServerOptions options ) {
+        WebConsole.start(preTask, this::triggerJMeter, options);
     }
 
-    private static void main(String[] args) {
+    private void triggerJMeter(String[] args) {
         init();
 
         String jmxFile = args != null && args.length > 0 && args[0].trim().length() > 0 ? args[0] : null;
@@ -56,8 +55,7 @@ public class JMeterRunner {
     }
 
     @SneakyThrows
-    private static void init() {
-        String jmeterHome = loadConfig().getProperty("jmeter-home");
+    private void init() {
         log.info("jmeter home: " + jmeterHome);
 
         JMeterUtils.loadJMeterProperties( jmeterHome + "/bin/jmeter.properties");
@@ -74,16 +72,4 @@ public class JMeterRunner {
         return testPlanTree;
     }
 
-    private static Properties loadConfig() {
-        String filename = "config.properties";
-        Properties prop = new Properties();
-
-        // Load the properties file using getResourceAsStream
-        try (InputStream input = Files.newInputStream(Paths.get(filename))) {
-            prop.load(input);
-        } catch (IOException ex) {
-            throw new RuntimeException("Failed to load config file", ex);
-        }
-        return prop;
-    }
 }
