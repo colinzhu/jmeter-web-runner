@@ -14,7 +14,7 @@ java -DjmeterHome=/home/colin/dev/apache-jmeter-5.5 -Dport=8080 -jar jmeter-web-
 4. Enter the JMX test file name e.g. test.jmx and click "Start"
 
 
-### Option 1 - add it as a dependency in
+### Option 2 - add it as a dependency
 1. Add the dependency into your project:
    ```xml
    <dependency>
