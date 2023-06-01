@@ -1,12 +1,26 @@
 # JMeter Web Runner
 
-JMeter Web Runner is a super simple java tool that allows you to trigger jmeter to run on the server from a web browser and see the output in real time. It uses Vert.x framework to create a web server and a websocket handler, and redirects the standard output to the web console. 
+JMeter Web Runner is a super simple java tool that allows you to trigger jmeter to run (on a server) from a web browser and see the output in real time. 
 
-## How to use
+## Usage
 
-1. Clone this repository
-2. Install jmeter on the server
-3. Update config.properties
-4. Run the `Example` class to start the server
-5. Open a web browser and navigate to `http://localhost:8080`. You should see a web console with a welcome message and a prompt to enter the parameters for the task
-6. Enter the JMX test file name e.g. test.jmx and click "Start"
+### Option 1 - run the compiled jar directly
+1. Download the latest jar from "Packages"
+2. run the jar like this:
+```shell
+java -DjmeterHome=/home/colin/dev/apache-jmeter-5.5 -Dport=8080 -jar jmeter-web-runner-0.1.1-full.jar
+```
+3. Open a web browser and navigate to `http://localhost:8080` 
+4. Enter the JMX test file name e.g. test.jmx and click "Start"
+
+
+### Option 1 - add it as a dependency in
+1. Add the dependency into your project:
+   ```xml
+   <dependency>
+       <groupId>io.github.colinzhu</groupId>
+       <artifactId>jmeter-web-runner</artifactId>
+       <version>0.1.1</version>
+   </dependency>
+   ```
+2. Implement your own starter. Example: `DefaultStarter.java`
