@@ -1,8 +1,5 @@
 package io.github.colinzhu.jmeterwebrunner;
 
-import io.github.colinzhu.webconsole.WebConsole;
-import io.vertx.core.http.HttpServerOptions;
-import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.jmeter.JMeter;
@@ -12,41 +9,26 @@ import org.apache.jmeter.util.JMeterUtils;
 import org.apache.jorphan.collections.HashTree;
 
 import java.io.File;
+import java.util.Objects;
 
+/**
+ * This class invokes the StandardJMeterEngine to run the JMX file when receives an event from the browser
+ */
 @Slf4j
-@RequiredArgsConstructor
 public class JMeterRunner {
+    private static final String PARAM_JMETER_HOME = "jmeterHome";
 
-    private final String jmeterHome;
+    /**
+     * This method invokes StandardJMeterEngine to run the JMX file
+     *
+     * @param args JMX file name
+     */
+    public static void main(String[] args) {
+        setupJMeter();
 
-    public void start(int port) {
-        WebConsole.start(this::triggerJMeter, port);
-    }
+        String jmxFile = getJmxFileName(args);
+        HashTree testPlan = loadJmxAsTestPlan(jmxFile);
 
-    public void start(Runnable preTask, int port) {
-        WebConsole.start(preTask, this::triggerJMeter, port);
-    }
-
-    public void start(HttpServerOptions options ) {
-        WebConsole.start(null, this::triggerJMeter, options);
-    }
-
-    public void start(Runnable preTask, HttpServerOptions options ) {
-        WebConsole.start(preTask, this::triggerJMeter, options);
-    }
-
-    private void triggerJMeter(String[] args) {
-        init();
-
-        String jmxFile = args != null && args.length > 0 && args[0].trim().length() > 0 ? args[0] : null;
-        if (null == jmxFile) {
-            log.error("Please provide a JMX test file name.");
-            return;
-        }
-
-        HashTree testPlan = loadTestPlan(jmxFile);
-
-        // Run Test Plan
         StandardJMeterEngine jmeter = new StandardJMeterEngine();
         jmeter.configure(testPlan);
         jmeter.run();
@@ -54,9 +36,18 @@ public class JMeterRunner {
         log.info("Test completed.");
     }
 
+    private static String getJmxFileName(String[] args) {
+        String jmxFile = args != null && args.length > 0 && args[0].trim().length() > 0 ? args[0] : null;
+        Objects.requireNonNull(jmxFile, "Please provide a JMX test file name.");
+        return jmxFile;
+    }
+
     @SneakyThrows
-    private void init() {
-        log.info("jmeter home: " + jmeterHome);
+    private static void setupJMeter() {
+        String jmeterHome = System.getProperty(PARAM_JMETER_HOME);
+        Objects.requireNonNull(jmeterHome, "VM option -DjmeterHome is required. e.g. -DjmeterHome=/test/apache-jmeter-5.5");
+
+        log.info("JMeter home: " + jmeterHome);
 
         JMeterUtils.loadJMeterProperties( jmeterHome + "/bin/jmeter.properties");
         JMeterUtils.setJMeterHome(jmeterHome);
@@ -66,7 +57,7 @@ public class JMeterRunner {
     }
 
     @SneakyThrows
-    private static HashTree loadTestPlan(String jmxFile) {
+    private static HashTree loadJmxAsTestPlan(String jmxFile) {
         HashTree testPlanTree = SaveService.loadTree(new File(jmxFile));
         JMeter.convertSubTree(testPlanTree, false); // Remove disabled test elements
         return testPlanTree;
