@@ -1,5 +1,6 @@
 package io.github.colinzhu.jmeter.webrunner.controller;
 
+import io.github.colinzhu.jmeter.webrunner.model.Report;
 import io.github.colinzhu.jmeter.webrunner.service.ReportService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.HandlerMapping;
 
 import java.io.File;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/reports")
@@ -23,6 +25,17 @@ import java.io.File;
 @Slf4j
 public class ReportController {
     private final ReportService reportService;
+
+    /**
+     * List all reports
+     * GET /api/reports
+     */
+    @GetMapping
+    public ResponseEntity<List<Report>> listReports() {
+        log.info("Listing all reports");
+        List<Report> reports = reportService.getAllReports();
+        return ResponseEntity.ok(reports);
+    }
 
     /**
      * Serve report resources (HTML, CSS, JS, images, etc.)

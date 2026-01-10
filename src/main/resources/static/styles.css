@@ -269,6 +269,54 @@ input[type="file"] {
     gap: 15px;
 }
 
+/* Reports List */
+.reports-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.report-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: #f7fafc;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #4299e1;
+    transition: all 0.3s;
+}
+
+.report-item:hover {
+    border-color: #4299e1;
+    box-shadow: 0 4px 12px rgba(66, 153, 225, 0.1);
+}
+
+.report-info {
+    flex: 1;
+}
+
+.report-id {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #2d3748;
+    margin-bottom: 5px;
+}
+
+.report-meta {
+    display: flex;
+    gap: 20px;
+    color: #718096;
+    font-size: 0.9rem;
+    flex-wrap: wrap;
+}
+
+.report-actions {
+    display: flex;
+    gap: 10px;
+}
+
 .execution-item {
     padding: 20px;
     background: #f7fafc;

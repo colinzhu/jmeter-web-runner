@@ -16,6 +16,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -55,14 +60,14 @@ public class ReportService {
 
     /**
      * Package the report directory as a ZIP archive for download
+     * Reads directly from storage/reports/{id} folder
      */
     public File packageReportAsZip(String reportId) {
-        Report report = reportRepository.findById(reportId)
-                .orElseThrow(() -> new ResourceNotFoundException("Report not found"));
-
-        Path reportPath = Paths.get(report.getPath());
-        if (!Files.exists(reportPath)) {
-            throw new ResourceNotFoundException("Report directory not found");
+        Path reportDir = Paths.get(storageConfig.getReportDir());
+        Path reportPath = reportDir.resolve(reportId);
+        
+        if (!Files.exists(reportPath) || !Files.isDirectory(reportPath)) {
+            throw new ResourceNotFoundException("Report not found: " + reportId);
         }
 
         try {
@@ -110,13 +115,59 @@ public class ReportService {
     }
 
     /**
+     * Get all reports by listing directories from storage/reports folder
+     */
+    public List<Report> getAllReports() {
+        Path reportDir = Paths.get(storageConfig.getReportDir());
+        List<Report> reports = new ArrayList<>();
+        
+        if (!Files.exists(reportDir) || !Files.isDirectory(reportDir)) {
+            log.warn("Report directory does not exist: {}", reportDir);
+            return reports;
+        }
+        
+        try (Stream<Path> paths = Files.list(reportDir)) {
+            paths.filter(Files::isDirectory)
+                    .forEach(dir -> {
+                        try {
+                            String reportId = dir.getFileName().toString();
+                            long size = calculateDirectorySize(dir.toString());
+                            Instant createdAt = Files.getLastModifiedTime(dir).toInstant();
+                            
+                            Report report = Report.builder()
+                                    .id(reportId)
+                                    .executionId(reportId) // Use folder name as both id and executionId
+                                    .path(dir.toString())
+                                    .createdAt(createdAt)
+                                    .size(size)
+                                    .build();
+                            
+                            reports.add(report);
+                        } catch (IOException e) {
+                            log.error("Error reading report directory: {}", dir, e);
+                        }
+                    });
+        } catch (IOException e) {
+            log.error("Error listing report directories: {}", e.getMessage(), e);
+        }
+        
+        // Sort by creation date (newest first)
+        reports.sort(Comparator.comparing(Report::getCreatedAt).reversed());
+        
+        return reports;
+    }
+
+    /**
      * Retrieve a specific resource file from the report directory
+     * Reads directly from storage/reports/{id} folder
      */
     public Resource getReportResource(String reportId, String resourcePath) {
-        Report report = reportRepository.findById(reportId)
-                .orElseThrow(() -> new ResourceNotFoundException("Report not found"));
-
-        Path reportPath = Paths.get(report.getPath());
+        Path reportDir = Paths.get(storageConfig.getReportDir());
+        Path reportPath = reportDir.resolve(reportId);
+        
+        if (!Files.exists(reportPath) || !Files.isDirectory(reportPath)) {
+            throw new ResourceNotFoundException("Report not found: " + reportId);
+        }
 
         // Handle empty or root path - default to index.html
         if (resourcePath == null || resourcePath.isEmpty() || resourcePath.equals("/")) {
@@ -145,5 +196,29 @@ public class ReportService {
             log.error("Error reading resource: {}", e.getMessage());
             throw new ResourceNotFoundException("Failed to read resource: " + resourcePath);
         }
+    }
+
+    /**
+     * Calculate the total size of a directory
+     */
+    private long calculateDirectorySize(String directoryPath) {
+        try {
+            Path path = Paths.get(directoryPath);
+            if (Files.exists(path) && Files.isDirectory(path)) {
+                return Files.walk(path)
+                        .filter(Files::isRegularFile)
+                        .mapToLong(p -> {
+                            try {
+                                return Files.size(p);
+                            } catch (IOException e) {
+                                return 0L;
+                            }
+                        })
+                        .sum();
+            }
+        } catch (IOException e) {
+            log.warn("Failed to calculate directory size for: {}", directoryPath, e);
+        }
+        return 0L;
     }
 }
