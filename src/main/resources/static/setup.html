@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>JMeter Setup - JMeter Web Runner</title>
+    <link href="styles.css" rel="stylesheet">
+    <link href="setup.css" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>JMeter Setup</h1>
+        <p>Upload and configure JMeter distribution</p>
+        <nav class="nav-links">
+            <a class="nav-link" href="index.html">← Back to Main</a>
+        </nav>
+    </header>
+
+    <!-- Status Display Section -->
+    <section class="status-section">
+        <h2>Current Status</h2>
+        <div class="status-display" id="statusDisplay">
+            <p class="loading">Checking JMeter status...</p>
+        </div>
+        <button class="btn btn-secondary" id="refreshStatusBtn" onclick="checkStatus()">
+            Refresh Status
+        </button>
+    </section>
+
+    <!-- Upload Section -->
+    <section class="upload-section">
+        <h2>Upload JMeter Distribution</h2>
+        <p class="section-description">
+            Upload a JMeter distribution ZIP file to configure JMeter for test execution.
+            The system supports both Unix and Windows distributions.
+        </p>
+
+        <div class="drop-zone" id="dropZone">
+            <div class="drop-zone-content">
+                <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                     xmlns="http://www.w3.org/2000/svg">
+                    <path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" stroke-linecap="round" stroke-linejoin="round"
+                          stroke-width="2"/>
+                </svg>
+                <p class="drop-zone-text">Drag and drop JMeter ZIP file here</p>
+                <p class="drop-zone-or">or</p>
+                <label class="file-label" for="zipFileInput">Choose ZIP file</label>
+                <input accept=".zip" id="zipFileInput" style="display: none;" type="file">
+                <p class="drop-zone-hint">Maximum file size: 200MB</p>
+            </div>
+            <div class="selected-file" id="selectedFile" style="display: none;">
+                <span id="selectedFileName"></span>
+                <button class="btn-clear" id="clearFileBtn" onclick="clearSelectedFile()">×</button>
+            </div>
+        </div>
+
+        <div class="upload-actions" id="uploadActions" style="display: none;">
+            <button class="btn btn-primary" id="uploadBtn" onclick="uploadJMeter()">
+                Upload and Configure
+            </button>
+            <button class="btn btn-secondary" onclick="clearSelectedFile()">
+                Cancel
+            </button>
+        </div>
+
+        <!-- Progress Indicator -->
+        <div class="progress-container" id="progressContainer" style="display: none;">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+            <p class="progress-text" id="progressText">Uploading...</p>
+        </div>
+
+        <!-- Status Messages -->
+        <div class="status-message" id="uploadStatus"></div>
+    </section>
+
+    <!-- Success Message Section -->
+    <div class="success-panel" id="successMessage" style="display: none;">
+        <div class="success-icon">✓</div>
+        <h3>JMeter Configured Successfully!</h3>
+        <div class="success-details" id="successDetails"></div>
+        <button class="btn btn-primary" onclick="window.location.href='index.html'">
+            Go to Main Page
+        </button>
+    </div>
+</div>
+
+<!-- Replacement Confirmation Dialog -->
+<div class="modal" id="confirmDialog" style="display: none;">
+    <div class="modal-content">
+        <h3>Replace Existing Installation?</h3>
+        <p>A JMeter installation already exists. Uploading a new distribution will replace the current installation.</p>
+        <div class="current-install-info" id="currentInstallInfo"></div>
+        <p class="warning-text">⚠️ This action cannot be undone.</p>
+        <div class="modal-actions">
+            <button class="btn btn-danger" id="confirmReplaceBtn" onclick="confirmReplace()">
+                Replace Installation
+            </button>
+            <button class="btn btn-secondary" onclick="cancelReplace()">
+                Cancel
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="setup.js"></script>
+</body>
+</html>
