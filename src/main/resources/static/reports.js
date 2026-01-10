@@ -7,7 +7,6 @@ let reports = [];
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {
     loadReports();
-    startAutoRefresh();
 });
 
 // Load and display reports
@@ -81,13 +80,6 @@ async function downloadReport(reportId) {
     } catch (error) {
         showNotification('Failed to download report: ' + error.message, 'error');
     }
-}
-
-// Auto-refresh reports
-function startAutoRefresh() {
-    setInterval(() => {
-        loadReports();
-    }, 5000); // Refresh every 5 seconds
 }
 
 // Utility functions
