@@ -94,6 +94,21 @@ public class ExecutionController {
         }
     }
 
+    @DeleteMapping("/history")
+    public ResponseEntity<Map<String, Object>> clearHistory() {
+        log.info("Received request to clear execution history");
+
+        int deletedCount = executionService.clearHistory();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "History cleared successfully");
+        response.put("deletedCount", deletedCount);
+
+        log.info("Cleared {} completed/failed/cancelled executions from history", deletedCount);
+
+        return ResponseEntity.ok(response);
+    }
+
     private Map<String, Object> buildExecutionResponse(Execution execution) {
         Map<String, Object> response = new HashMap<>();
         response.put("id", execution.getId());

@@ -235,6 +235,30 @@ async function cancelExecution(executionId) {
     }
 }
 
+// Clear history
+async function clearHistory() {
+    if (!confirm('Are you sure you want to clear all completed, failed, and cancelled executions? Queued and running executions will be preserved.')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE}/executions/history`, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            showNotification(`History cleared. ${result.deletedCount} execution(s) deleted.`, 'success');
+            loadExecutions(); // Refresh execution list
+        } else {
+            const error = await response.json();
+            showNotification(error.error || 'Failed to clear history', 'error');
+        }
+    } catch (error) {
+        showNotification('Failed to clear history: ' + error.message, 'error');
+    }
+}
+
 // Load and display executions
 async function loadExecutions() {
     const executionsList = document.getElementById('executionsList');
@@ -252,9 +276,11 @@ async function loadExecutions() {
 
 function displayExecutions(executions) {
     const executionsList = document.getElementById('executionsList');
+    const clearHistoryBtn = document.getElementById('clearHistoryBtn');
     
     if (executions.length === 0) {
         executionsList.innerHTML = '<p class="empty">No test executions yet</p>';
+        clearHistoryBtn.style.display = 'none';
         return;
     }
 
@@ -262,6 +288,12 @@ function displayExecutions(executions) {
     const sortedExecutions = [...executions].sort((a, b) => 
         new Date(b.createdAt) - new Date(a.createdAt)
     );
+
+    // Check if there are clearable executions (completed, failed, or cancelled)
+    const hasClearableExecutions = sortedExecutions.some(exec => 
+        exec.status === 'completed' || exec.status === 'failed' || exec.status === 'cancelled'
+    );
+    clearHistoryBtn.style.display = hasClearableExecutions ? 'block' : 'none';
 
     executionsList.innerHTML = sortedExecutions.map(exec => {
         const statusClass = getStatusClass(exec.status);

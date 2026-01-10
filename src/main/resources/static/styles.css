@@ -257,6 +257,12 @@ input[type="file"] {
 }
 
 /* Execution List */
+.executions-header {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 15px;
+}
+
 .executions-list {
     display: flex;
     flex-direction: column;

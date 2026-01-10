@@ -293,4 +293,30 @@ public class ExecutionService {
         
         return savedExecution;
     }
+
+    /**
+     * Clear execution history by deleting all completed, failed, and cancelled executions.
+     * Queued and running executions are preserved.
+     * @return the number of executions deleted
+     */
+    public int clearHistory() {
+        List<Execution> allExecutions = executionRepository.findAll();
+        
+        List<Execution> executionsToDelete = allExecutions.stream()
+                .filter(e -> e.getStatus() == ExecutionStatus.COMPLETED ||
+                             e.getStatus() == ExecutionStatus.FAILED ||
+                             e.getStatus() == ExecutionStatus.CANCELLED)
+                .toList();
+        
+        int deletedCount = 0;
+        for (Execution execution : executionsToDelete) {
+            executionRepository.deleteById(execution.getId());
+            deletedCount++;
+            log.info("Deleted execution {} with status {} from history",
+                     execution.getId(), execution.getStatus());
+        }
+        
+        log.info("Cleared {} executions from history", deletedCount);
+        return deletedCount;
+    }
 }
