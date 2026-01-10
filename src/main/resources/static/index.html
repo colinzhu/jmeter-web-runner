@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>JMeter Web Runner</title>
+    <link href="styles.css" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>JMeter Web Runner</h1>
+        <p>Upload and execute JMeter test files</p>
+        <nav class="nav-links">
+            <a class="nav-link" href="setup.html">⚙️ Setup JMeter</a>
+        </nav>
+    </header>
+
+    <!-- File Upload Section -->
+    <section class="upload-section">
+        <h2>Upload Test File</h2>
+        <form id="uploadForm">
+            <div class="file-input-wrapper">
+                <input accept=".jmx" id="fileInput" required type="file">
+                <label class="file-label" for="fileInput">Choose JMX file</label>
+                <span class="file-name" id="fileName">No file chosen</span>
+            </div>
+            <button class="btn btn-primary" id="uploadButton" type="submit">Upload</button>
+        </form>
+        <div class="status-message" id="uploadStatus"></div>
+    </section>
+
+    <!-- File List Section -->
+    <section class="files-section">
+        <h2>Uploaded Files</h2>
+        <div class="files-list" id="filesList">
+            <p class="loading">Loading files...</p>
+        </div>
+    </section>
+
+    <!-- Execution Status Section -->
+    <section class="executions-section">
+        <h2>Test Executions</h2>
+        <div class="executions-list" id="executionsList">
+            <p class="loading">Loading executions...</p>
+        </div>
+    </section>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
