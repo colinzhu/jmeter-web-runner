@@ -73,6 +73,11 @@ public class ExecutionQueue {
         // Now we have reserved a slot, try to get an execution
         String executionId = queuedExecutions.poll();
         if (executionId != null) {
+            // Add a placeholder Execution object to track this dequeued execution
+            // This ensures markCompleted() can properly decrement the counter
+            Execution placeholder = new Execution();
+            placeholder.setId(executionId);
+            runningExecutions.put(executionId, placeholder);
             log.info("Dequeued execution {}. Running: {}/{}",
                     executionId, runningCount.get(), maxConcurrentExecutions);
         } else {
@@ -98,7 +103,9 @@ public class ExecutionQueue {
      * @param executionId The ID of the completed execution
      */
     public void markCompleted(String executionId) {
-        if (runningExecutions.remove(executionId) != null) {
+        // Remove from running executions (may be null if only dequeued but not yet marked running)
+        if (runningExecutions.containsKey(executionId)) {
+            runningExecutions.remove(executionId);
             runningCount.decrementAndGet();
             log.info("Execution {} completed. Running: {}/{}",
                     executionId, runningCount.get(), maxConcurrentExecutions);
