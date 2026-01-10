@@ -10,6 +10,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,7 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.HandlerMapping;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/reports")
@@ -105,5 +108,23 @@ public class ReportController {
                 .header(HttpHeaders.CONTENT_DISPOSITION,
                         "attachment; filename=\"report-" + id + ".zip\"")
                 .body(resource);
+    }
+
+    /**
+     * Delete a report
+     * DELETE /api/reports/{id}
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Map<String, String>> deleteReport(@PathVariable String id) {
+        log.info("Received request to delete report with ID: {}", id);
+
+        reportService.deleteReport(id);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Report deleted successfully");
+
+        log.info("Report deleted successfully with ID: {}", id);
+
+        return ResponseEntity.ok(response);
     }
 }

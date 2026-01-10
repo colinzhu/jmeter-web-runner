@@ -50,6 +50,7 @@ function displayReports(reports) {
             <div class="report-actions">
                 <button class="btn btn-info" onclick="viewReport('${report.id}')">View Report</button>
                 <button class="btn btn-secondary" onclick="downloadReport('${report.id}')">Download</button>
+                <button class="btn btn-danger" onclick="deleteReport('${report.id}')">Delete</button>
             </div>
         </div>
     `).join('');
@@ -79,6 +80,29 @@ async function downloadReport(reportId) {
         showNotification('Report downloaded successfully', 'success');
     } catch (error) {
         showNotification('Failed to download report: ' + error.message, 'error');
+    }
+}
+
+// Delete report
+async function deleteReport(reportId) {
+    if (!confirm('Are you sure you want to delete this report? This action cannot be undone.')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE}/reports/${reportId}`, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            showNotification('Report deleted successfully', 'success');
+            loadReports(); // Refresh report list
+        } else {
+            const error = await response.json();
+            showNotification(error.error || 'Failed to delete report', 'error');
+        }
+    } catch (error) {
+        showNotification('Failed to delete report: ' + error.message, 'error');
     }
 }
 

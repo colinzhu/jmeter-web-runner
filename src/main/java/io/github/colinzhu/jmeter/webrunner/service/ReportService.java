@@ -199,6 +199,45 @@ public class ReportService {
     }
 
     /**
+     * Delete a report by removing its directory from storage/reports folder
+     */
+    public void deleteReport(String reportId) {
+        Path reportDir = Paths.get(storageConfig.getReportDir());
+        Path reportPath = reportDir.resolve(reportId);
+        
+        if (!Files.exists(reportPath) || !Files.isDirectory(reportPath)) {
+            throw new ResourceNotFoundException("Report not found: " + reportId);
+        }
+        
+        try {
+            deleteDirectory(reportPath);
+            log.info("Report deleted successfully: {}", reportId);
+        } catch (IOException e) {
+            log.error("Failed to delete report directory: {}", reportPath, e);
+            throw new RuntimeException("Failed to delete report. Please try again.", e);
+        }
+    }
+
+    /**
+     * Delete a directory and all its contents
+     */
+    private void deleteDirectory(Path directory) throws IOException {
+        if (!Files.exists(directory)) {
+            return;
+        }
+
+        Files.walk(directory)
+                .sorted((a, b) -> b.compareTo(a)) // Reverse order to delete files before directories
+                .forEach(path -> {
+                    try {
+                        Files.delete(path);
+                    } catch (IOException e) {
+                        log.warn("Failed to delete: {}", path, e);
+                    }
+                });
+    }
+
+    /**
      * Calculate the total size of a directory
      */
     private long calculateDirectorySize(String directoryPath) {
