@@ -29,6 +29,18 @@ public class IdGenerator {
      * @return timestamp-based ID string
      */
     public static String generateTimestampId() {
+        return generateTimestampId(null);
+    }
+
+    /**
+     * Generate a timestamp-based ID that includes the jmx filename.
+     * Format: {sanitized-filename}-{timestamp}-{nanos} or {timestamp}-{nanos} if filename is null
+     * The filename will have ".jmx" extension removed and special characters replaced with "-"
+     *
+     * @param jmxFilename the jmx filename (can be null)
+     * @return timestamp-based ID string with filename prefix
+     */
+    public static String generateTimestampId(String jmxFilename) {
         Instant now = Instant.now();
         long currentTimestamp = now.toEpochMilli() * 1_000_000 + now.getNano() % 1_000_000;
         
@@ -49,12 +61,52 @@ public class IdGenerator {
         String dateTimePart = DATE_TIME_FORMATTER.format(zonedDateTime);
         String nanosPart = String.format("%09d", now.getNano());
         
-        // If counter is 0, use original format for backward compatibility
+        // Build the base ID
+        String baseId;
         if (count == 0) {
-            return dateTimePart + "-" + nanosPart;
+            baseId = dateTimePart + "-" + nanosPart;
         } else {
             // Add counter suffix for concurrent calls
-            return dateTimePart + "-" + nanosPart + "-" + count;
+            baseId = dateTimePart + "-" + nanosPart + "-" + count;
         }
+        
+        // If filename is provided, prepend sanitized filename
+        if (jmxFilename != null && !jmxFilename.isEmpty()) {
+            String sanitizedFilename = sanitizeFilename(jmxFilename);
+            return sanitizedFilename + "-" + baseId;
+        }
+        
+        return baseId;
+    }
+
+    /**
+     * Sanitize jmx filename by removing .jmx extension and replacing special characters with "-"
+     *
+     * @param filename the original filename
+     * @return sanitized filename safe for filesystem use
+     */
+    private static String sanitizeFilename(String filename) {
+        // Remove .jmx extension (case-insensitive)
+        String name = filename;
+        if (name.toLowerCase().endsWith(".jmx")) {
+            name = name.substring(0, name.length() - 4);
+        }
+        
+        // Replace special characters with "-"
+        // Keep alphanumeric, hyphens, and underscores, replace everything else with "-"
+        name = name.replaceAll("[^a-zA-Z0-9_-]", "-");
+        
+        // Replace multiple consecutive hyphens with a single hyphen
+        name = name.replaceAll("-+", "-");
+        
+        // Remove leading/trailing hyphens
+        name = name.replaceAll("^-+|-+$", "");
+        
+        // If empty after sanitization, use a default value
+        if (name.isEmpty()) {
+            name = "jmx";
+        }
+        
+        return name;
     }
 }

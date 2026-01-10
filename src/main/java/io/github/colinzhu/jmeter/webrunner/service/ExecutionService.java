@@ -38,7 +38,11 @@ public class ExecutionService {
             throw new ResourceNotFoundException("File not found with id: " + fileId);
         }
 
-        String executionId = IdGenerator.generateTimestampId();
+        // Get file to extract filename for ID generation
+        File file = fileRepository.findById(fileId)
+                .orElseThrow(() -> new ResourceNotFoundException("File not found with id: " + fileId));
+        
+        String executionId = IdGenerator.generateTimestampId(file.getFilename());
 
         Execution execution = Execution.builder()
                 .id(executionId)
