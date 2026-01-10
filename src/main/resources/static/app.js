@@ -237,10 +237,6 @@ async function cancelExecution(executionId) {
 
 // Clear history
 async function clearHistory() {
-    if (!confirm('Are you sure you want to clear all completed, failed, and cancelled executions? Queued and running executions will be preserved.')) {
-        return;
-    }
-
     try {
         const response = await fetch(`${API_BASE}/executions/history`, {
             method: 'DELETE'

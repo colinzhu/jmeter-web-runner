@@ -85,10 +85,6 @@ async function downloadReport(reportId) {
 
 // Delete report
 async function deleteReport(reportId) {
-    if (!confirm('Are you sure you want to delete this report? This action cannot be undone.')) {
-        return;
-    }
-
     try {
         const response = await fetch(`${API_BASE}/reports/${reportId}`, {
             method: 'DELETE'
