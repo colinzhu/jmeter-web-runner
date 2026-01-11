@@ -424,8 +424,8 @@ input[type="file"] {
 .file-meta {
     display: flex;
     gap: 16px;
-    color: #718096;
-    font-size: 0.95rem;
+    color: #4a5568;
+    font-size: 0.9rem;
     align-items: center;
     flex-shrink: 0;
 }
