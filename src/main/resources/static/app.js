@@ -4,6 +4,8 @@ const API_BASE = '/api';
 // State
 let files = [];
 let executions = [];
+let filteredFiles = [];
+let searchQuery = '';
 
 // Check JMeter status on startup
 async function checkJMeterStatus() {
@@ -42,6 +44,7 @@ function showJMeterSetupPrompt() {
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {
     initializeUploadForm();
+    initializeSearch();
     checkJMeterStatus();
     loadFiles();
     loadExecutions();
@@ -136,28 +139,78 @@ async function loadFiles() {
         if (!response.ok) throw new Error('Failed to load files');
         
         files = await response.json();
-        displayFiles(files);
+        filterFiles(); // This will call displayFiles with filtered results
     } catch (error) {
         filesList.innerHTML = `<p class="error">Error loading files: ${error.message}</p>`;
     }
 }
 
-function displayFiles(files) {
+// Initialize search functionality
+function initializeSearch() {
+    const searchInput = document.getElementById('fileSearch');
+    const clearSearchBtn = document.getElementById('clearSearchBtn');
+    
+    searchInput.addEventListener('input', (e) => {
+        searchQuery = e.target.value.toLowerCase().trim();
+        filterFiles();
+        
+        if (searchQuery.length > 0) {
+            clearSearchBtn.style.display = 'flex';
+        } else {
+            clearSearchBtn.style.display = 'none';
+        }
+    });
+}
+
+// Clear search
+function clearSearch() {
+    const searchInput = document.getElementById('fileSearch');
+    searchInput.value = '';
+    searchQuery = '';
+    filterFiles();
+    document.getElementById('clearSearchBtn').style.display = 'none';
+}
+
+// Filter files based on search query
+function filterFiles() {
+    if (!searchQuery) {
+        filteredFiles = files;
+    } else {
+        filteredFiles = files.filter(file => 
+            file.filename.toLowerCase().includes(searchQuery) ||
+            file.id.toLowerCase().includes(searchQuery)
+        );
+    }
+    displayFiles(filteredFiles);
+}
+
+function displayFiles(filesToDisplay) {
     const filesList = document.getElementById('filesList');
     
     if (files.length === 0) {
         filesList.innerHTML = '<p class="empty">No files uploaded yet</p>';
         return;
     }
+    
+    if (searchQuery && filteredFiles.length === 0) {
+        filesList.innerHTML = `
+            <div class="empty-search">
+                <div class="empty-search-icon">🔍</div>
+                <div class="empty-search-text">No files found</div>
+                <div class="empty-search-hint">Try adjusting your search terms</div>
+            </div>
+        `;
+        return;
+    }
 
-    filesList.innerHTML = files.map(file => `
+    filesList.innerHTML = filteredFiles.map(file => `
         <div class="file-item" data-id="${file.id}">
             <div class="file-info">
                 <div class="file-name">${escapeHtml(file.filename)}</div>
                 <div class="file-meta">
-                    <span>ID: ${formatId(file.id)}</span>
-                    <span>${formatFileSize(file.size)}</span>
-                    <span>${formatDate(file.uploadedAt)}</span>
+                    <span class="file-meta-item">ID: ${formatId(file.id)}</span>
+                    <span class="file-meta-item">${formatFileSize(file.size)}</span>
+                    <span class="file-meta-item">${formatDate(file.uploadedAt)}</span>
                 </div>
             </div>
             <div class="file-actions">
@@ -194,10 +247,6 @@ async function executeTest(fileId) {
 
 // Delete file
 async function deleteFile(fileId) {
-    if (!confirm('Are you sure you want to delete this file?')) {
-        return;
-    }
-
     try {
         const response = await fetch(`${API_BASE}/files/${fileId}`, {
             method: 'DELETE'
@@ -300,11 +349,30 @@ function displayExecutions(executions) {
         // Show Cancel button for queued or running executions
         const showCancelButton = exec.status === 'queued' || exec.status === 'running';
         
+        const reportButtons = exec.status === 'completed' && exec.reportId ? `
+            <button class="btn btn-info" onclick="viewReport('${exec.reportId}')">View Report</button>
+            <button class="btn btn-secondary" onclick="downloadReport('${exec.reportId}')">Download Report</button>
+        ` : '';
+        
+        const cancelButton = showCancelButton ? `
+            <button class="btn btn-warning" onclick="cancelExecution('${exec.id}')">Cancel</button>
+        ` : '';
+        
+        const actionButtons = reportButtons || cancelButton ? `
+            <div class="execution-actions">
+                ${reportButtons}
+                ${cancelButton}
+            </div>
+        ` : '';
+        
         return `
             <div class="execution-item ${statusClass}" data-id="${exec.id}">
                 <div class="execution-header">
-                    <span class="execution-id">Execution: ${formatId(exec.id)}</span>
-                    <span class="execution-status status-${exec.status}">${exec.status.toUpperCase()}</span>
+                    <div class="execution-header-left">
+                        <span class="execution-id">Execution: ${formatId(exec.id)}</span>
+                        <span class="execution-status status-${exec.status}">${exec.status.toUpperCase()}</span>
+                    </div>
+                    ${actionButtons}
                 </div>
                 <div class="execution-details">
                     ${exec.filename ? `<div>File: ${escapeHtml(exec.filename)}</div>` : ''}
@@ -318,17 +386,6 @@ function displayExecutions(executions) {
                     ${queueInfo}
                     ${exec.error ? `<div class="error-message">Error: ${escapeHtml(exec.error)}</div>` : ''}
                 </div>
-                ${exec.status === 'completed' && exec.reportId ? `
-                    <div class="execution-actions">
-                        <button class="btn btn-info" onclick="viewReport('${exec.reportId}')">View Report</button>
-                        <button class="btn btn-secondary" onclick="downloadReport('${exec.reportId}')">Download Report</button>
-                    </div>
-                ` : ''}
-                ${showCancelButton ? `
-                    <div class="execution-actions">
-                        <button class="btn btn-warning" onclick="cancelExecution('${exec.id}')">Cancel</button>
-                    </div>
-                ` : ''}
             </div>
         `;
     }).join('');

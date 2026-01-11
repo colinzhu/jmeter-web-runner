@@ -9,12 +9,17 @@
 <body>
 <div class="container">
     <header>
-        <h1>JMeter Web Runner</h1>
-        <p>Upload and execute JMeter test files</p>
-        <nav class="nav-links">
-            <a class="nav-link" href="reports.html">📊 View Reports</a>
-            <a class="nav-link" href="setup.html">⚙️ Setup JMeter</a>
-        </nav>
+        <div class="header-content">
+            <div class="header-title">
+                <h1>JMeter Web Runner</h1>
+                <p>Upload and execute JMeter test files</p>
+            </div>
+            <nav class="top-nav">
+                <a class="nav-link active" href="index.html">🏠 Home</a>
+                <a class="nav-link" href="reports.html">📊 View Reports</a>
+                <a class="nav-link" href="setup.html">⚙️ Setup JMeter</a>
+            </nav>
+        </div>
     </header>
 
     <!-- File Upload Section -->
@@ -33,16 +38,26 @@
 
     <!-- File List Section -->
     <section class="files-section">
-        <h2>Uploaded Files</h2>
-        <div class="files-list" id="filesList">
+        <div class="section-header">
+            <div class="section-header-left">
+                <h2>Uploaded Files</h2>
+            </div>
+            <div class="search-bar">
+                <input type="text" id="fileSearch" placeholder="🔍 Search files by name..." class="search-input">
+                <button class="btn-icon" id="clearSearchBtn" style="display: none;" onclick="clearSearch()" title="Clear search">
+                    ✕
+                </button>
+            </div>
+        </div>
+        <div class="files-grid" id="filesList">
             <p class="loading">Loading files...</p>
         </div>
     </section>
 
     <!-- Execution Status Section -->
     <section class="executions-section">
-        <h2>Test Executions</h2>
-        <div class="executions-header">
+        <div class="section-header">
+            <h2>Test Executions</h2>
             <button class="btn btn-secondary" id="clearHistoryBtn" onclick="clearHistory()" style="display: none;">Clear History</button>
         </div>
         <div class="executions-list" id="executionsList">
