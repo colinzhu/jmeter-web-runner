@@ -2,6 +2,7 @@ package io.github.colinzhu.jmeter.webrunner.controller;
 
 import io.github.colinzhu.jmeter.webrunner.exception.GlobalExceptionHandler;
 import io.github.colinzhu.jmeter.webrunner.exception.InvalidFileException;
+import io.github.colinzhu.jmeter.webrunner.exception.ResourceNotFoundException;
 import io.github.colinzhu.jmeter.webrunner.model.File;
 import io.github.colinzhu.jmeter.webrunner.service.FileStorageService;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,14 +12,17 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
  * Unit tests for FileController edge cases
@@ -336,5 +340,136 @@ class FileControllerUnitTest {
                 .andExpect(jsonPath("$.filename").value(filename));
 
         verify(fileStorageService, times(1)).storeFile(any());
+    }
+
+    /**
+     * Test successful file download
+     * Requirements: Download functionality
+     */
+    @Test
+    void downloadFile_withValidId_shouldReturnFile() throws Exception {
+        // Arrange
+        String fileId = UUID.randomUUID().toString();
+        String filename = "test-download.jmx";
+        String fileContent = "<?xml version=\"1.0\"?><jmeterTestPlan><test></test></jmeterTestPlan>";
+
+        // Create a temporary file for testing
+        Path tempFile = Files.createTempFile("test-", ".jmx");
+        Files.write(tempFile, fileContent.getBytes());
+
+        File fileEntity = File.builder()
+                .id(fileId)
+                .filename(filename)
+                .size(fileContent.length())
+                .uploadedAt(Instant.now())
+                .path(tempFile.toString())
+                .build();
+
+        when(fileStorageService.getFile(fileId)).thenReturn(fileEntity);
+
+        mockMvc = MockMvcBuilders.standaloneSetup(new FileController(fileStorageService))
+                .build();
+
+        // Act & Assert
+        mockMvc.perform(get("/api/files/{id}/download", fileId))
+                .andExpect(status().isOk())
+                .andExpect(header().exists("Content-Disposition"))
+                .andExpect(header().string("Content-Disposition", "attachment; filename=\"" + filename + "\""))
+                .andExpect(header().string("Content-Type", MediaType.APPLICATION_OCTET_STREAM_VALUE));
+
+        verify(fileStorageService, times(1)).getFile(fileId);
+
+        // Cleanup
+        Files.deleteIfExists(tempFile);
+    }
+
+    /**
+     * Test file download with non-existent file
+     * Requirements: Download functionality error handling
+     */
+    @Test
+    void downloadFile_withNonExistentFileId_shouldReturnNotFound() throws Exception {
+        // Arrange
+        String fileId = UUID.randomUUID().toString();
+
+        // Use a path that definitely doesn't exist
+        String nonExistentPath = "/tmp/" + UUID.randomUUID() + ".jmx";
+
+        File fileEntity = File.builder()
+                .id(fileId)
+                .filename("non-existent.jmx")
+                .size(100)
+                .uploadedAt(Instant.now())
+                .path(nonExistentPath)
+                .build();
+
+        when(fileStorageService.getFile(fileId)).thenReturn(fileEntity);
+
+        mockMvc = MockMvcBuilders.standaloneSetup(new FileController(fileStorageService))
+                .build();
+
+        // Act & Assert
+        mockMvc.perform(get("/api/files/{id}/download", fileId))
+                .andExpect(status().isNotFound());
+
+        verify(fileStorageService, times(1)).getFile(fileId);
+    }
+
+    /**
+     * Test file download with invalid file ID
+     * Requirements: Download functionality error handling
+     */
+    @Test
+    void downloadFile_withInvalidId_shouldReturnNotFound() throws Exception {
+        // Arrange
+        String invalidFileId = "non-existent-id";
+
+        when(fileStorageService.getFile(eq(invalidFileId)))
+                .thenThrow(new ResourceNotFoundException("File not found with id: " + invalidFileId));
+
+        // Act & Assert
+        mockMvc.perform(get("/api/files/{id}/download", invalidFileId))
+                .andExpect(status().isNotFound());
+
+        verify(fileStorageService, times(1)).getFile(invalidFileId);
+    }
+
+    /**
+     * Test file download with special characters in filename
+     * Requirements: Download functionality with edge cases
+     */
+    @Test
+    void downloadFile_withSpecialCharactersInFilename_shouldReturnFile() throws Exception {
+        // Arrange
+        String fileId = UUID.randomUUID().toString();
+        String filename = "test file (1) [2024].jmx";
+        String fileContent = "<?xml version=\"1.0\"?><jmeterTestPlan><test></test></jmeterTestPlan>";
+
+        // Create a temporary file for testing
+        Path tempFile = Files.createTempFile("test-", ".jmx");
+        Files.write(tempFile, fileContent.getBytes());
+
+        File fileEntity = File.builder()
+                .id(fileId)
+                .filename(filename)
+                .size(fileContent.length())
+                .uploadedAt(Instant.now())
+                .path(tempFile.toString())
+                .build();
+
+        when(fileStorageService.getFile(fileId)).thenReturn(fileEntity);
+
+        mockMvc = MockMvcBuilders.standaloneSetup(new FileController(fileStorageService))
+                .build();
+
+        // Act & Assert
+        mockMvc.perform(get("/api/files/{id}/download", fileId))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Disposition", "attachment; filename=\"" + filename + "\""));
+
+        verify(fileStorageService, times(1)).getFile(fileId);
+
+        // Cleanup
+        Files.deleteIfExists(tempFile);
     }
 }

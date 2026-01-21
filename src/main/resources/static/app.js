@@ -215,6 +215,7 @@ function displayFiles(filesToDisplay) {
             </div>
             <div class="file-actions">
                 <button class="btn btn-success" onclick="executeTest('${file.id}')">Execute</button>
+                <button class="btn btn-secondary" onclick="downloadFile('${file.id}', '${escapeHtml(file.filename)}')">Download</button>
                 <button class="btn btn-danger" onclick="deleteFile('${file.id}')">Delete</button>
             </div>
         </div>
@@ -261,6 +262,28 @@ async function deleteFile(fileId) {
         }
     } catch (error) {
         showNotification('Failed to delete file: ' + error.message, 'error');
+    }
+}
+
+// Download file
+async function downloadFile(fileId, filename) {
+    try {
+        const response = await fetch(`${API_BASE}/files/${fileId}/download`);
+        if (!response.ok) throw new Error('Failed to download file');
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        showNotification('File downloaded successfully', 'success');
+    } catch (error) {
+        showNotification('Failed to download file: ' + error.message, 'error');
     }
 }
 

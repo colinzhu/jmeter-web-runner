@@ -89,6 +89,11 @@ public class FileStorageService {
         }
     }
 
+    public File getFile(String fileId) {
+        return fileRepository.findById(fileId)
+                .orElseThrow(() -> new ResourceNotFoundException("File not found with id: " + fileId));
+    }
+
     private void validateFile(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             throw new InvalidFileException("File is empty or null.");

@@ -4,11 +4,17 @@ import io.github.colinzhu.jmeter.webrunner.model.File;
 import io.github.colinzhu.jmeter.webrunner.service.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,5 +77,26 @@ public class FileController {
         log.info("File deleted successfully with ID: {}", id);
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{id}/download")
+    public ResponseEntity<Resource> downloadFile(@PathVariable String id) {
+        log.info("Received request to download file with ID: {}", id);
+
+        File file = fileStorageService.getFile(id);
+        Path filePath = Paths.get(file.getPath());
+        Resource resource = new FileSystemResource(filePath);
+
+        if (!resource.exists()) {
+            log.error("File not found at path: {}", file.getPath());
+            return ResponseEntity.notFound().build();
+        }
+
+        log.info("File download initiated: {} with ID: {}", file.getFilename(), id);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
     }
 }
