@@ -158,6 +158,17 @@ async function loadFiles() {
         if (!response.ok) throw new Error('Failed to load files');
         
         files = await response.json();
+        
+        // Sort by filename (ASC) and upload time (DESC)
+        files.sort((a, b) => {
+            // First sort by filename (ascending)
+            const nameCompare = a.filename.localeCompare(b.filename);
+            if (nameCompare !== 0) return nameCompare;
+            
+            // Then sort by upload time (descending)
+            return new Date(b.uploadedAt) - new Date(a.uploadedAt);
+        });
+        
         filterFiles(); // This will call displayFiles with filtered results
     } catch (error) {
         filesList.innerHTML = `<p class="error">Error loading files: ${error.message}</p>`;
