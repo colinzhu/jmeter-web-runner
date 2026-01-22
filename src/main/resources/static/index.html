@@ -16,6 +16,7 @@
             </div>
             <nav class="top-nav">
                 <a class="nav-link active" href="index.html">🏠 Home</a>
+                <a class="nav-link" href="javascript:void(0);" id="uploadToggleBtn" onclick="toggleUploadSection(event)">📤 Upload JMX</a>
                 <a class="nav-link" href="reports.html">📊 View Reports</a>
                 <a class="nav-link" href="setup.html">⚙️ Setup JMeter</a>
             </nav>
@@ -23,7 +24,7 @@
     </header>
 
     <!-- File Upload Section -->
-    <section class="upload-section">
+    <section class="upload-section" id="uploadSection" style="display: none;">
         <h2>Upload Test File</h2>
         <form id="uploadForm">
             <div class="file-input-wrapper">

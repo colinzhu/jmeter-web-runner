@@ -6,6 +6,25 @@ let files = [];
 let executions = [];
 let filteredFiles = [];
 let searchQuery = '';
+let uploadSectionVisible = false;
+
+// Toggle upload section
+function toggleUploadSection(event) {
+    event.preventDefault(); // Prevent default link behavior
+    
+    const uploadSection = document.getElementById('uploadSection');
+    const uploadToggleBtn = document.getElementById('uploadToggleBtn');
+    
+    uploadSectionVisible = !uploadSectionVisible;
+    uploadSection.style.display = uploadSectionVisible ? 'block' : 'none';
+    
+    // Update button style to indicate active state
+    if (uploadSectionVisible) {
+        uploadToggleBtn.classList.add('active');
+    } else {
+        uploadToggleBtn.classList.remove('active');
+    }
+}
 
 // Check JMeter status on startup
 async function checkJMeterStatus() {
