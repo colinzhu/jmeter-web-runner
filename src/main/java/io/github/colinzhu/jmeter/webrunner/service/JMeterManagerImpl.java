@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 @Slf4j
 public class JMeterManagerImpl implements JMeterManager {
 
-    private static final Pattern VERSION_PATTERN = Pattern.compile("Version\\s+(\\d+\\.\\d+(?:\\.\\d+)?)");
+    private static final Pattern VERSION_PATTERN = Pattern.compile("\\b(\\d+\\.\\d+(?:\\.\\d+)?)\\b");
     private static final String SETUP_STATE_FILE = "setup-state.json";
     private final JMeterConfig jmeterConfig;
     private final PersistenceService persistenceService;
